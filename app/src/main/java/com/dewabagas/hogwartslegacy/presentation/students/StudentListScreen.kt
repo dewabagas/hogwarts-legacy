@@ -1,32 +1,13 @@
 package com.dewabagas.hogwartslegacy.presentation.students
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.* // Untuk pengaturan layout
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.* // Untuk state dan remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -39,11 +20,17 @@ import com.dewabagas.hogwartslegacy.domain.entities.Student
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.coil.CoilImage
 import com.skydoves.landscapist.components.rememberImageComponent
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentListScreen(viewModel: StudentListViewModel = hiltViewModel()) {
+    var searchQuery by remember { mutableStateOf("") }
+
+    // Ambil state dari ViewModel
     val studentsState by viewModel.students.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     Scaffold(
         topBar = {
@@ -57,30 +44,50 @@ fun StudentListScreen(viewModel: StudentListViewModel = hiltViewModel()) {
             )
         }
     ) { padding ->
-        when (studentsState) {
-            is DataState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
+        Column(modifier = Modifier.padding(padding)) {
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = {
+                    searchQuery = it
+                    viewModel.searchStudents(searchQuery) // Panggil fungsi search di ViewModel
+                },
+                label = { Text("Search Students") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+            SwipeRefresh(
+                state = SwipeRefreshState(isRefreshing),
+                onRefresh = { viewModel.refreshStudents() }, // Panggil fungsi refresh di ViewModel
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when (studentsState) {
+                    is DataState.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    is DataState.Success -> {
+                        val students = (studentsState as DataState.Success<List<Student>>).data
+                        StudentGrid(
+                            students = students,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                    }
+                    is DataState.Error -> {
+                        val error = (studentsState as DataState.Error).exception.message
+                        Text(
+                            text = "Error: $error",
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
-            }
-            is DataState.Success -> {
-                val students = (studentsState as DataState.Success<List<Student>>).data
-                StudentGrid(students = students,
-                    modifier = Modifier.padding(top = 56.dp)
-                    )
-            }
-            is DataState.Error -> {
-                val error = (studentsState as DataState.Error).exception.message
-                Text(
-                    text = "Error: $error",
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(16.dp)
-                )
             }
         }
     }

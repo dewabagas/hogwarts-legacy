@@ -25,6 +25,7 @@ hiltVersion = "2.52"
 kspVersion = "2.0.20-1.0.24"
 composeBom = "2024.09.03"
 composeVersin = "1.7.3"
+accompanist = "0.31.3-beta"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -60,6 +61,7 @@ landscapist-animation = { module = "com.github.skydoves:landscapist-animation", 
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hiltVersion" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hiltVersion" }
+accompanist-swiperefresh = { group = "com.google.accompanist", name = "accompanist-swiperefresh", version.ref = "accompanist" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

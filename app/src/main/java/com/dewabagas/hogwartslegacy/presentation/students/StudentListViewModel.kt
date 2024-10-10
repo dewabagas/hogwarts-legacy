@@ -25,6 +25,9 @@ class StudentListViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
     init {
         getAllStudents()
     }
@@ -38,6 +41,36 @@ class StudentListViewModel @Inject constructor(
                 .collect { dataState ->
                     Timber.tag("GetAllStudentsUseCase").e("dataState: %s", dataState)
                     _students.value = dataState
+                }
+        }
+    }
+
+    fun refreshStudents() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            getAllStudentsUseCase()
+                .catch { exception ->
+                    _students.value = DataState.Error(exception as Exception)
+                }
+                .collect { dataState ->
+                    _students.value = dataState
+                    _isRefreshing.value = false
+                }
+        }
+    }
+
+    fun searchStudents(query: String) {
+        viewModelScope.launch {
+            _students.value = DataState.Loading
+            getAllStudentsUseCase()
+                .catch { exception ->
+                    _students.value = DataState.Error(exception as Exception)
+                }
+                .collect { dataState ->
+                    val filteredStudents = (dataState as? DataState.Success)?.data?.filter {
+                        it.name!!.contains(query, ignoreCase = true) // Filter berdasarkan nama siswa
+                    }
+                    _students.value = if (filteredStudents != null) DataState.Success(filteredStudents) else DataState.Success(emptyList())
                 }
         }
     }

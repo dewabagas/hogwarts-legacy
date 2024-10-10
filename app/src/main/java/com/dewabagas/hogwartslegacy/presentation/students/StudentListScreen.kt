@@ -1,45 +1,31 @@
 package com.dewabagas.hogwartslegacy.presentation.students
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.* // Untuk pengaturan layout
+import androidx.compose.foundation.lazy.LazyColumn // Untuk menampilkan daftar
 import androidx.compose.foundation.lazy.items
-//noinspection UsingMaterialAndMaterial3Libraries
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.*
+import androidx.compose.material3.* // Menggunakan Material3
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dewabagas.hogwartslegacy.data.core.network.DataState
 import com.dewabagas.hogwartslegacy.domain.entities.Student
 import com.skydoves.landscapist.ImageOptions
-import com.skydoves.landscapist.animation.circular.CircularRevealPlugin
 import com.skydoves.landscapist.coil.CoilImage
 import com.skydoves.landscapist.components.rememberImageComponent
-import com.skydoves.landscapist.placeholder.shimmer.Shimmer
-import com.skydoves.landscapist.placeholder.shimmer.ShimmerPlugin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentListScreen(viewModel: StudentListViewModel = hiltViewModel()) {
-    val students by viewModel.students.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val studentsState by viewModel.students.collectAsState()
 
     Scaffold(
         topBar = {
@@ -52,7 +38,36 @@ fun StudentListScreen(viewModel: StudentListViewModel = hiltViewModel()) {
                 }
             )
         }
-    ) {}
+    ) { padding ->
+        // Cek DataState untuk menampilkan UI sesuai state saat ini
+        when (studentsState) {
+            is DataState.Loading -> {
+                // Tampilkan loading indicator
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            is DataState.Success -> {
+                // Jika data berhasil diambil, tampilkan daftar siswa
+                val students = (studentsState as DataState.Success<List<Student>>).data
+                StudentList(students)
+            }
+            is DataState.Error -> {
+                // Tampilkan pesan error jika terjadi kesalahan
+                val error = (studentsState as DataState.Error).exception.message
+                Text(
+                    text = "Error: $error",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -78,6 +93,7 @@ fun StudentItem(student: Student) {
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
+            // Tampilkan gambar menggunakan CoilImage dari library Landscapist
             CoilImage(
                 modifier = Modifier
                     .padding(bottom = 8.dp)
@@ -87,20 +103,19 @@ fun StudentItem(student: Student) {
                 imageOptions = ImageOptions(
                     contentScale = ContentScale.Crop,
                     alignment = Alignment.Center,
-                    contentDescription = "artist image",
-                    colorFilter = null,
+                    contentDescription = "Student image"
                 ),
                 component = rememberImageComponent {
-                    +CircularRevealPlugin(
-                        duration = 800
-                    )
-
-                },
+                    // Circular reveal animation
+                    +com.skydoves.landscapist.animation.circular.CircularRevealPlugin(duration = 800)
+                    // Placeholder shimmer effect
+                    +com.skydoves.landscapist.placeholder.shimmer.ShimmerPlugin()
+                }
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
-                    text = student.name,
+                    text = "${student.name}",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -116,4 +131,3 @@ fun StudentItem(student: Student) {
         }
     }
 }
-

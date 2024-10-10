@@ -5,24 +5,24 @@ import com.dewabagas.hogwartslegacy.domain.entities.Wand
 
 
 data class StudentDto(
-    val id: String,
-    val name: String,
-    val species: String,
-    val gender: String,
-    val house: String,
-    val dateOfBirth: String,
-    val yearOfBirth: Int,
-    val wizard: Boolean,
-    val ancestry: String,
-    val eyeColour: String,
-    val hairColour: String,
+    val id: String?,
+    val name: String?,
+    val species: String?,
+    val gender: String?,
+    val house: String?,
+    val dateOfBirth: String?,
+    val yearOfBirth: Int?,
+    val wizard: Boolean?,
+    val ancestry: String?,
+    val eyeColour: String?,
+    val hairColour: String?,
     val wand: WandDto?,
-    val patronus: String,
-    val hogwartsStudent: Boolean,
-    val hogwartsStaff: Boolean,
-    val actor: String,
-    val alive: Boolean,
-    val image: String
+    val patronus: String?,
+    val hogwartsStudent: Boolean?,
+    val hogwartsStaff: Boolean?,
+    val actor: String?,
+    val alive: Boolean?,
+    val image: String?
 ) {
     fun toStudent(): Student {
         return Student(
@@ -49,9 +49,9 @@ data class StudentDto(
 }
 
 data class WandDto(
-    val wood: String,
-    val core: String,
-    val length: Int?
+    val wood: String?,
+    val core: String?,
+    val length: Double?
 ) {
     fun toWand(): Wand {
         return Wand(

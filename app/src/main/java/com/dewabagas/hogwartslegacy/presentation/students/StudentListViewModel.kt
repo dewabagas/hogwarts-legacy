@@ -1,5 +1,6 @@
 package com.dewabagas.hogwartslegacy.presentation.students
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dewabagas.hogwartslegacy.data.core.network.DataState
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,6 +36,7 @@ class StudentListViewModel @Inject constructor(
                     _students.value = DataState.Error(exception as Exception)
                 }
                 .collect { dataState ->
+                    Timber.tag("GetAllStudentsUseCase").e("dataState: %s", dataState)
                     _students.value = dataState
                 }
         }

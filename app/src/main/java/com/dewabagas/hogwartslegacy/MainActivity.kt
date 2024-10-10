@@ -4,11 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.dewabagas.hogwartslegacy.presentation.students.StudentListScreen
+import androidx.navigation.compose.rememberNavController
+import com.dewabagas.hogwartslegacy.presentation.navigation.NavGraph
+import com.dewabagas.hogwartslegacy.presentation.shared.others.BottomNavigationBar
 import com.dewabagas.hogwartslegacy.ui.theme.HogwartsLegacyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -18,11 +21,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             HogwartsLegacyTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    StudentListScreen()
+                val navController = rememberNavController()
+
+                Scaffold(
+                    bottomBar = {
+                        BottomNavigationBar(navController = navController)
+                    }
+                ) { paddingValues ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        NavGraph(navController = navController)
+                    }
                 }
             }
         }

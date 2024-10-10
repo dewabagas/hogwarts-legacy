@@ -1,11 +1,29 @@
 package com.dewabagas.hogwartslegacy.presentation.students
 
-import androidx.compose.foundation.layout.* // Untuk pengaturan layout
-import androidx.compose.foundation.lazy.LazyColumn // Untuk menampilkan daftar
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.* // Menggunakan Material3
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,10 +57,8 @@ fun StudentListScreen(viewModel: StudentListViewModel = hiltViewModel()) {
             )
         }
     ) { padding ->
-        // Cek DataState untuk menampilkan UI sesuai state saat ini
         when (studentsState) {
             is DataState.Loading -> {
-                // Tampilkan loading indicator
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -53,12 +69,12 @@ fun StudentListScreen(viewModel: StudentListViewModel = hiltViewModel()) {
                 }
             }
             is DataState.Success -> {
-                // Jika data berhasil diambil, tampilkan daftar siswa
                 val students = (studentsState as DataState.Success<List<Student>>).data
-                StudentList(students)
+                StudentGrid(students = students,
+                    modifier = Modifier.padding(top = 56.dp)
+                    )
             }
             is DataState.Error -> {
-                // Tampilkan pesan error jika terjadi kesalahan
                 val error = (studentsState as DataState.Error).exception.message
                 Text(
                     text = "Error: $error",
@@ -71,11 +87,13 @@ fun StudentListScreen(viewModel: StudentListViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun StudentList(students: List<Student>) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+fun StudentGrid(students: List<Student>, modifier: Modifier = Modifier) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxSize(), // Gunakan modifier dengan padding tambahan
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(students) { student ->
             StudentItem(student)
@@ -86,19 +104,19 @@ fun StudentList(students: List<Student>) {
 @Composable
 fun StudentItem(student: Student) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp),
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(8.dp)
         ) {
-            // Tampilkan gambar menggunakan CoilImage dari library Landscapist
             CoilImage(
                 modifier = Modifier
-                    .padding(bottom = 8.dp)
-                    .height(250.dp)
-                    .width(190.dp),
+                    .height(200.dp)
+                    .fillMaxWidth(),
                 imageModel = { student.image },
                 imageOptions = ImageOptions(
                     contentScale = ContentScale.Crop,
@@ -106,28 +124,24 @@ fun StudentItem(student: Student) {
                     contentDescription = "Student image"
                 ),
                 component = rememberImageComponent {
-                    // Circular reveal animation
                     +com.skydoves.landscapist.animation.circular.CircularRevealPlugin(duration = 800)
-                    // Placeholder shimmer effect
                     +com.skydoves.landscapist.placeholder.shimmer.ShimmerPlugin()
                 }
             )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = "${student.name}",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "House: ${student.house}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Actor: ${student.actor}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "${student.name}",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "House: ${student.house}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = "Actor: ${student.actor}",
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
